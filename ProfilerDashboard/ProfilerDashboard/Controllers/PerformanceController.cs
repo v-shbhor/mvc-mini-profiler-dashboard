@@ -2,17 +2,21 @@
 {
     #region Imports
 
+    using System;
+    using System.Collections;
     using System.Collections.Generic;
     using System.Configuration;
     using System.Data;
     using System.Data.Common;
     using System.Data.SqlClient;
+    using System.Web;
     using System.Web.Mvc;
 
     using Dapper;
 
-    #endregion
+    using MvcMiniProfiler.Data;
 
+    #endregion
 
     // TODO: Secure this controller on your server
     public class PerformanceController : Controller
@@ -25,6 +29,39 @@
         #endregion
 
         #region Public Methods
+
+        public ActionResult Details(string webRoute)
+        {
+            const string sql = @"SELECT [Id], [Started], [DurationMilliseconds], [DurationMillisecondsInSql], [HasSqlTimings], [HasDuplicateSqlTimings]
+FROM [MiniProfilers]
+WHERE [MiniProfilers].[Name] = @WebRoute
+ORDER BY [MiniProfilers].[Started] DESC;";
+
+            IEnumerable<dynamic> data;
+
+            using (DbConnection conn = GetOpenConnection())
+            {
+                data = conn.Query(sql, new { WebRoute = webRoute });
+            }
+
+            var dt = new DataTable();
+
+            dt.Columns.Add("Id", typeof(String)).Caption = "Id";
+            dt.Columns.Add("Started", typeof(String)).Caption = "Started";
+            dt.Columns.Add("DurationMilliseconds", typeof(Double)).Caption = "Duration (ms)";
+            dt.Columns.Add("DurationMillisecondsInSql", typeof(Double)).Caption = "Duration - Sql  (ms)";
+            dt.Columns.Add("HasSqlTimings", typeof(bool)).Caption = "Has Sql?";
+            dt.Columns.Add("HasDuplicateSqlTimings", typeof(bool)).Caption = "Has Duplicate Sql?";
+
+            foreach (var row in data)
+            {
+                dt.Rows.Add(new object[] { row.Id, row.Started.ToString(), row.DurationMilliseconds, row.DurationMillisecondsInSql, row.HasSqlTimings, row.HasDuplicateSqlTimings });
+            }
+
+            var googleDt = new Bortosky.Google.Visualization.GoogleDataTable(dt);
+
+            return Content(googleDt.GetJson(), "application/json");
+        }
 
         public ActionResult Index()
         {
@@ -66,7 +103,7 @@ group by SRC.Name
 order by BoxHigh DESC;";
             IEnumerable<dynamic> data;
 
-            using (var conn = GetOpenConnection())
+            using (DbConnection conn = GetOpenConnection())
             {
                 data = conn.Query(sql);
             }
@@ -83,7 +120,7 @@ order by BoxHigh DESC;";
         /// </summary>
         protected DbConnection GetConnection()
         {
-            return new SqlConnection(connectionString);
+            return new ProfiledDbConnection(new SqlConnection(connectionString), MvcMiniProfiler.MiniProfiler.Current);
         }
 
         /// <summary>
@@ -99,6 +136,6 @@ order by BoxHigh DESC;";
             return result;
         }
 
-        #endregion
+        #endregion    
     }
 }

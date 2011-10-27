@@ -76,6 +76,15 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="GoogleVisualization\Columns\BooleanDataColumn.cs" />
+    <Compile Include="GoogleVisualization\Columns\DateGoogleDataColumn.cs" />
+    <Compile Include="GoogleVisualization\Columns\DateTimeGoogleDataColumn.cs" />
+    <Compile Include="GoogleVisualization\Columns\GoogleDataColumn.cs" />
+    <Compile Include="GoogleVisualization\Columns\NumberGoogleDataColumn.cs" />
+    <Compile Include="GoogleVisualization\Columns\StringGoogleDataColumn.cs" />
+    <Compile Include="GoogleVisualization\Columns\TimeOfDayGoogleDataColumn.cs" />
+    <Compile Include="GoogleVisualization\GoogleDataTable.cs" />
+    <Compile Include="GoogleVisualization\GoogleDateType.cs" />
     <Compile Include="Models\AccountModels.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
